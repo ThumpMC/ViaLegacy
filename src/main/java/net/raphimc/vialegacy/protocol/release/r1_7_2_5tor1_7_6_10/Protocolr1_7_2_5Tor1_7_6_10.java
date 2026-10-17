@@ -68,6 +68,29 @@ public class Protocolr1_7_2_5Tor1_7_6_10 extends AbstractProtocol<ClientboundPac
                 map(Types.STRING); // uuid
                 map(Types.STRING); // name
                 create(Types.VAR_INT, 0); // properties count
+                handler(wrapper -> {
+                    final String playerName = wrapper.get(Types.STRING, 1);
+                    final GameProfileFetcher gameProfileFetcher = Via.getManager().getProviders().get(GameProfileFetcher.class);
+                    final UUID mojangUuid = gameProfileFetcher.getMojangUuid(playerName);
+                    final GameProfile gameProfile = gameProfileFetcher.getGameProfile(mojangUuid);
+                    if (gameProfile == null || gameProfile.id() == null) {
+                        return;
+                    }
+
+                    // The 1.7.2 protocol has no profile properties. Populate the 1.7.6
+                    // profile section so the next protocol bridge can forward signed textures.
+                    wrapper.set(Types.STRING, 0, gameProfile.id().toString());
+                    final GameProfile.Property[] properties = gameProfile.properties();
+                    wrapper.set(Types.VAR_INT, 1, properties.length);
+                    for (final GameProfile.Property property : properties) {
+                        wrapper.write(Types.STRING, property.name());
+                        wrapper.write(Types.STRING, property.value());
+                        wrapper.write(Types.BOOLEAN, property.signature() != null);
+                        if (property.signature() != null) {
+                            wrapper.write(Types.STRING, property.signature());
+                        }
+                    }
+                });
                 map(Types.INT); // x
                 map(Types.INT); // y
                 map(Types.INT); // z
