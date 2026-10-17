@@ -81,7 +81,7 @@ public class Protocolr1_7_2_5Tor1_7_6_10 extends AbstractProtocol<ClientboundPac
                     // profile section so the next protocol bridge can forward signed textures.
                     wrapper.set(Types.STRING, 0, gameProfile.id().toString());
                     final GameProfile.Property[] properties = gameProfile.properties();
-                    wrapper.set(Types.VAR_INT, 1, properties.length);
+                    wrapper.set(Types.VAR_INT, 0, properties.length);
                     for (final GameProfile.Property property : properties) {
                         wrapper.write(Types.STRING, property.name());
                         wrapper.write(Types.STRING, property.value());
